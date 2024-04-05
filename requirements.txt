@@ -1,0 +1,5 @@
+numpy
+pingouin
+scikit-learn
+scipy
+opencv-python==4.5.5.64
