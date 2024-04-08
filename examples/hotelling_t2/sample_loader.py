@@ -2,14 +2,19 @@
 
 import cv2 as cv
 import numpy as np
+import glob
 
 def load_images():
+    file_extension = "*.png"
     base = "/home/jiri/Neural/platform/color/images/"
 
-    red = cv.imread(base + "image_green.png")
-    green = cv.imread(base + "image_dark_green.png")
+    files = glob.glob(base + file_extension)
 
-    return red, green
+    images = []
+    for file in files:
+        images.append(cv.imread(file))
+
+    return images
 
 def as_features(image):
     colorspace = cv.COLOR_BGR2LAB
@@ -24,7 +29,12 @@ def as_features(image):
     return np.array([red_a.ravel(), red_b.ravel()]).T
 
 def load_dataset():
-    red, green = load_images()
+    images = load_images()
 
-    return as_features(red), as_features(green)
+    features = []
+
+    for image in images:
+        features.append(as_features(image))
+
+    return features
 # %%

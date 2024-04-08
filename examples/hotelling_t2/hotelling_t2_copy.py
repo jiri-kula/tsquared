@@ -1,3 +1,4 @@
+#%%
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2 as cv
@@ -6,25 +7,22 @@ from tsquared import HotellingT2
 
 from sample_loader import load_dataset, load_images, as_features
 
-feat_color_a, feat_color_b = load_dataset();
+feat_colors = load_dataset();
 
-test = feat_color_a
-train = feat_color_b
+reference = 4
+train = feat_colors[reference]
+test = feat_colors[6]
 
 n_train = train.shape[0]
 n_test = test.shape[0]
 
-
 # Inputs.
 print("--- Inputs ---\n")
-
-# print(f"True mean vector: {true_mean}")
-# print(f"True covariance matrix:\n{true_cov}")
 
 # Fit and print some attributes.
 print("\n--- Hotelling's T-squared fitting on the training set---\n")
 
-hotelling = HotellingT2()
+hotelling = HotellingT2(alpha=0.15)
 hotelling.fit(train)
 
 print(f"Computed mean vector: {hotelling.mean_}")
@@ -62,27 +60,30 @@ print(f"Hotelling's T-squared score for the entire test set: {t2_score}")
 print(f"Do the training set and the test set come from the same "
 	f"distribution? {t2_score <= ucl}")
 
-plt.scatter(train[:, 0], train[:, 1], c='r', label='Red')
-plt.scatter(test[:, 0], test[:, 1], c='g', label='Green')
-plt.scatter(outliers[:, 0], outliers[:, 1], c='b', label='Green')
-
 # Plot scaled Hotelling's T-squared scores and the UCL.
-fig, ax = plt.subplots(figsize=(14, 8))
+fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(14, 8))
 
-plt.scatter(range(scaled_t2_scores.size), scaled_t2_scores)
-ucl_line = plt.axhline(y=ucl_baseline, color='r', linestyle='-')
+ax[0].scatter(train[:, 0], train[:, 1], c='r', label='Red')
+ax[0].scatter(test[:, 0], test[:, 1], c='g', label='Green')
+ax[0].scatter(outliers[:, 0], outliers[:, 1], c='b', label='Green')
 
-ax.set_title('Scaled Hotelling\'s T2 scores')
-ax.set_xlabel('Index')
-ax.set_ylabel('Scaled Hotelling\'s T2 score')
+ax[0].set_xlim(0, 255)
+ax[0].set_ylim(0, 255)
+
+ucl_line = ax[1].axhline(y=ucl_baseline, color='r', linestyle='-')
+ax[1].scatter(range(scaled_t2_scores.size), scaled_t2_scores)
+ax[1].set_title('Scaled Hotelling\'s T2 scores')
+ax[1].set_xlabel('Index')
+ax[1].set_ylabel('Scaled Hotelling\'s T2 score')
 ucl_line.set_label('UCL')
-plt.legend()
+ax[1].legend()
 
 fig.tight_layout()
 
-image_a, image_b = load_images()
+images = load_images()
 
-fig1, ax1 = plt.subplots(nrows=2, ncols=2, figsize=(14, 8))
+fig1, ax1 = plt.subplots(nrows=len(images), ncols=2, figsize=(112, 112))
+# plt.subplots_adjust(left=0.05, right=0.95, bottom=0.05, top=0.95, wspace=0.01, hspace=0.01)
 
 def plot_outlier(ax, image, hotelling):
 	preds = hotelling.predict(as_features(image))
@@ -94,13 +95,22 @@ def plot_outlier(ax, image, hotelling):
 			zebra[y, x, :] = [255, 0, 255]  # Yellow color	
 	mask = np.reshape(preds, (image.shape[0], image.shape[1]))
 
+	ax[0].set_xticks([])
+	ax[0].set_yticks([])
 	ax[0].imshow(cv.cvtColor(image, cv.COLOR_BGR2RGB))
 
 	out = mask < 0
 	image[out, :] = zebra[out, :]
+	
+	ax[1].set_xticks([])
+	ax[1].set_yticks([])
 	ax[1].imshow(cv.cvtColor(image, cv.COLOR_BGR2RGB))
 
-plot_outlier(ax1[0], image_a, hotelling)
-plot_outlier(ax1[1], image_b, hotelling)
+for i, image in enumerate(images):
+	plot_outlier(ax1[i], image, hotelling)
+
+fig1.tight_layout()
 
 plt.show()
+
+# %%
