@@ -4,9 +4,22 @@ import cv2 as cv
 import numpy as np
 import glob
 
-def load_images():
+def list_directories(base):
+    # Append a slash if not present at the end of the base path
+    if base[-1] != "/":
+        base += "/"
+
+    # Use glob to list all directories in the base directory
+    directories = glob.glob(base + "*/")
+
+    # Remove the base path from the directories
+    directories = [dir.replace(base, "") for dir in directories]
+
+    return directories
+
+def load_images(base):
     file_extension = "*.png"
-    base = "/home/jiri/Neural/platform/color/images/"
+    # base = "/mnt/c/tmp/output"
 
     files = glob.glob(base + file_extension)
 
@@ -28,13 +41,24 @@ def as_features(image):
 
     return np.array([red_a.ravel(), red_b.ravel()]).T
 
-def load_dataset():
-    images = load_images()
-
+def load_dataset(base):
+    dirs = list_directories(base)
+    
     features = []
 
-    for image in images:
-        features.append(as_features(image))
+    for dir in dirs:
+        print("Loading images from " + dir)
+        images = load_images(base + "/" + dir)
 
-    return features
+        image_set_feats = []
+        for image in images:
+            image_set_feats.append(as_features(image))
+
+
+        features.append(np.concatenate(image_set_feats))
+
+    # remove trailing slash
+    dirs = [dir[:-1] for dir in dirs]
+
+    return features, dirs
 # %%
