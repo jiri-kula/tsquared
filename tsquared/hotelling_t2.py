@@ -137,7 +137,7 @@ class HotellingT2(BaseEstimator, OutlierMixin, TransformerMixin):
 
 		self.default_ucl = 'indep'
 
-	def fit(self, X, y=None):
+	def fit(self, X, Y, y=None):
 		"""
 		Fit Hotelling's T-squared. Specifically, compute the mean vector, the
 		covariance matrix on X and the upper control limits.
@@ -169,7 +169,11 @@ class HotellingT2(BaseEstimator, OutlierMixin, TransformerMixin):
 		self.n_samples_in_, self.n_features_in_ = X.shape
 
 		self.mean_ = X.mean(axis=0)
-		self.cov_ = np.cov(X.T, ddof=1)
+		S_X = np.cov(X.T, ddof=1)
+		S_Y = np.cov(Y.T, ddof=1)
+		N_X = X.shape[0]
+		N_Y = Y.shape[0]
+		self.cov_ = ((N_X - 1) * S_X + (N_Y - 1) * S_Y) / (N_X + N_Y - 2)
 		if self.n_features_in_ == 1:
 			self.cov_ = self.cov_.reshape(1, 1)
 

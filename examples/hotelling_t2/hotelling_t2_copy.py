@@ -29,7 +29,7 @@ def draw_ellipse(mean, S, ax):
 	ax.add_patch(ellipse)
 
 base = "/mnt/c/tmp/output_single"
-base = "/mnt/c/tmp/b2"
+base = "/mnt/c/tmp/b5"
 feat_colors, feat_names = load_dataset(base);
 
 #%%
@@ -39,7 +39,7 @@ def compare(train, test):
 	# n_test = test.shape[0]
 
 	hotelling = HotellingT2(alpha=0.05)
-	hotelling.fit(train)
+	hotelling.fit(train, test)
 
 	# ucl_baseline = 0.1
 	# t2_scores = hotelling.score_samples(test)
@@ -75,11 +75,17 @@ print(table)
 
 #%%
 cerna = 1
+cervena=2
 opalit = 3
 polar=4
+seda=5
+stribrna=6
+smodra = 7
+tmodra = 8
+tzelena=9
 
-train = feat_colors[polar]
-test = feat_colors[opalit]
+train = feat_colors[cerna]
+test = feat_colors[tzelena]
 
 n_train = train.shape[0]
 n_test = test.shape[0]
@@ -91,7 +97,7 @@ print("--- Inputs ---\n")
 print("\n--- Hotelling's T-squared fitting on the training set---\n")
 
 hotelling = HotellingT2(alpha=0.05)
-hotelling.fit(train)
+hotelling.fit(train, test)
 
 print(f"Computed mean vector: {hotelling.mean_}")
 print(f"Computed covariance matrix:\n{hotelling.cov_}")
@@ -141,6 +147,8 @@ draw_ellipse(hotelling.mean_, hotelling.cov_, ax[0])
 ax[0].scatter(test[::div, 0], test[::div, 1], c='g', label='test', marker='x')
 # ax[0].hist2d(test[::div, 0], test[::div, 1], bins=100, cmap='Greens', alpha=0.5)
 draw_ellipse(np.mean(test, axis=0), np.cov(test.T, ddof=1), ax[0])
+ax[0].set_xlabel("a")
+ax[0].set_ylabel("b")
 
 # ax[0].scatter(outliers[::div, 0], outliers[::div, 1], c='b', label='outlier')
 ax[0].legend()
